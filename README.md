@@ -61,7 +61,7 @@ Installation from the source:
 
 ## Configuration
 
-See [examples/config.yaml](https://github.com/Tarick/tscheduler/examples/config.yaml), should be self explanatory.
+See [examples/config.yaml](examples/config.yaml), should be self explanatory.
 
 The path to file could passed via --config option or found in order in:
 * current dir
