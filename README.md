@@ -27,34 +27,29 @@ This is not [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expressio
   * "L" (e.g. the last day of the month). Workaround is possible with multiple schedules, though beware of Feb 29.
   * symbolic definitions of weekday (Mon, Fri) and month (Jan, Sep) - only numeric is used.
 
-
 * Year and seconds precision by default.
 
-  If year is ommited, will try to find the next job run for every year from current to 10 years in the future.
+    If year is ommited, will try to find the next job run for every year from current to 10 years in the future.
 
-  If second is ommited, by default it specifies 00.
+    If second is ommited, by default it specifies 00.
 
-* Location (Timezone) per schedule. Job can run in multiple timezones simultaneously.
+* Location (Timezone) per schedule. Job can run with timezone per schedule.
 
   Note that we don't handle summer/winter daylight shifts, it is possible for job to skip its run or run twice during the shift. Recommended to use UTC.
   By default the location is Local, i.e. the one of the machine.
 
 * Job control:
 
-* Stdout and stderr redirection of running command to files. File rotation is not supported.
-* Simultaneous run of job is disabled by default, change it with "parallel" key.
+  * Stdout and stderr redirection of running command to files. File rotation is not supported.
+  * Simultaneous run of job is disabled by default, change it with "parallel" key.
   * Job timeout after which the job will be killed.
-
-
-  Based on uber/zapp library, with the ability to switch to structured (json) logging.
-  Colored and not, internal information like function caller and line is available and also configurable.
 
 * Instrumentation:
 
-   * HTTP based management interface to pause, resume, or gracefully shutdown scheduler with configurable timeout to wait for jobs to finish.
-   * Prometheus metrics.
-   * Scheduler logging based on uber/zapp library, with the ability to switch to structured (json) logging.
-   Logs rotation is not supported. Colored severity keywords, internal information like function caller and line are also configurable. Jobs run status and next scheduled time is reported.
+  * HTTP based management interface to pause, resume, or gracefully shutdown scheduler with configurable timeout to wait for jobs to finish.
+  * Prometheus metrics.
+  * Scheduler logging based on uber/zapp library, with the ability to switch to structured (json) logging.
+  Logs rotation is not supported. Colored severity keywords, internal information like function caller and line are also configurable. Jobs run status and next scheduled time is reported.
 
 ## Installation
 
