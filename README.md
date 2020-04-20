@@ -62,7 +62,7 @@ Fetch prebuilt binary from Releases page. Only Linux is avaliable for now.
 
 Installation from the source:
 
-```go install https://github.com/Tarick/tscheduler```
+```go get https://github.com/Tarick/tscheduler```
 
 ## Configuration
 
