@@ -9,6 +9,89 @@ If you're looking for Cron compatible implementation to use as a library in your
 
 I don't think that __tscheduler__ is mature enough to be used as a separate library package, so will not split it into the library from application code for now.
 
+## Motivation
+
+Mostly for Go practice, but I also don't like classic Crontab format, some things should just go. Also built in job control is IMO better than trying to script locks and timeouts. 
+
+The snippet of config file below is selfexplanatory.
+```yaml
+logging:
+  # Development key puts the logger in development mode, which changes the behavior of DPanicLevel and takes stacktraces more liberally.
+  development: true
+  # level: info
+  level: debug
+  encoding: console
+  # encoding: json
+  disable_caller: false
+  disable_stacktrace: false
+  disable_color: false
+  # output_paths: ["stdout", "/tmp/1.log"]
+  output_paths: ["stdout"]
+  error_output_paths: ["stderr"]
+# Starts Prometheus metrics service on http://127.0.0.1:9002/metrics
+metrics:
+  enabled: true
+  address: 127.0.0.1:9002
+# Starts management service on http://127.0.0.1:9001/
+# Required for 'status', 'shutdown', 'pause', 'resume' commands
+management:
+  enabled: true
+  address: 127.0.0.1:9001
+  # Wait timeout for scheduler to stop, seconds
+  scheduler_stop_timeout: 5
+  # After scheduler is stopped, wait for this seconds for jobs to finish
+  jobs_termination_timeout: 5
+jobs:
+  - id: 'Test Job #1'
+    parallel: false
+    # parallel: true
+    # timeout: 3s
+    command: 
+      - bash
+      - -c 
+      - 'ls -la /tmp/1out.log'
+    stdout: "/tmp/1out.log"
+    stderr: /tmp/1err.log
+    schedule:
+      - year: 2021-2022,2030
+        month: 1, 2, 4-5, 3
+        day: 1
+        weekday: "*"
+        hour: 1
+        minute: 2, 3
+        second: 3
+        location: UTC
+      - month: "*"
+        day: "*"
+        weekday: "*"
+        hour: "*"
+        minute: "*"
+        second: 00
+        location: UTC
+      - month: "*"
+        day: "*"
+        weekday: "0,2,3,4,5,6"
+        hour: "*"
+        minute: "*"
+        second: "/3"
+        # If location is missing, location: "Local", i.e. local timezone
+  - id: 'Test Job #2'
+    command: 
+      - /bin/sleep
+      - 10
+    parallel: false
+    timeout: 10s
+    schedule:
+      - month: "*"
+        # if weekday is missed, default - any day
+        day: "*"
+        hour: "*"
+        minute: "*"
+        # 30, 32, ...,58
+        second: "30/2"
+        ```
+        
+
 ## Features
 
 * Multiple schedules per job to run the same command on different days at different times.
@@ -61,9 +144,9 @@ Installation from the source:
 
 ## Configuration
 
-See [examples/config.yaml](examples/config.yaml), should be self explanatory.
+See [examples/config.yaml](examples/config.yaml).
 
-The path to file could passed via --config option or found in order in:
+The path to file could be passed via --config option or looked up in order in:
 * current dir
 * $HOME/.config/tscheduler/
 * /etc/tscheduler/
