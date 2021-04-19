@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Tarick/tscheduler/job"
+	"github.com/Tarick/tscheduler/pkg/job"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"

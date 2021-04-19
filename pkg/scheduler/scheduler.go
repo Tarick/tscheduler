@@ -1,10 +1,11 @@
-package job
+package scheduler
 
 import (
 	"context"
 	"fmt"
 	"sync"
 	"time"
+	"github.com/Tarick/tscheduler/pkg/job"
 )
 
 type logger interface {
@@ -16,7 +17,7 @@ type logger interface {
 
 // Scheduler is main type for running jobs
 type Scheduler struct {
-	Jobs      []*Job
+	Jobs      []*job.Job
 	logger    logger
 	running   bool
 	mutex     sync.Mutex
@@ -26,7 +27,7 @@ type Scheduler struct {
 }
 
 // GetJobs returns the list of jobs, registered in scheduler
-func (sr *Scheduler) GetJobs() (jobs []Job) {
+func (sr *Scheduler) GetJobs() (jobs []job.Job) {
 	if sr.running {
 		commCh := make(chan struct{})
 		sr.execF <- func() {
@@ -48,8 +49,8 @@ func (sr *Scheduler) IsRunning() bool {
 }
 
 // getJobs returns the list of Jobs, registered in scheduler
-func (sr *Scheduler) getJobs() []Job {
-	var jobs = make([]Job, len(sr.Jobs))
+func (sr *Scheduler) getJobs() []job.Job {
+	var jobs = make([]job.Job, len(sr.Jobs))
 	for i, j := range sr.Jobs {
 		jobs[i] = *j
 	}
@@ -58,16 +59,16 @@ func (sr *Scheduler) getJobs() []Job {
 
 // AddJob is the wrapper to add a job, updates NextRun field in process.
 // If a scheduler is already running, the job is added with custom function, passed to scheduler goroutine.
-func (sr *Scheduler) AddJob(j *Job) error {
+func (sr *Scheduler) AddJob(j *job.Job) error {
 	if sr.running {
 		commCh := make(chan struct{})
 		var err error
 		sr.execF <- func() {
 			j := j
 			now := time.Now()
-			err = j.updateNextRun(now)
+			err = j.UpdateNextRun(now)
 			if err != nil {
-				err = fmt.Errorf("Job %v is not schedulable: %v", j.id, err)
+				err = fmt.Errorf("Job %v is not schedulable: %v", j.Id, err)
 			} else {
 				err = sr.addJob(j)
 			}
@@ -82,10 +83,10 @@ func (sr *Scheduler) AddJob(j *Job) error {
 }
 
 // addJob adds job to the list, returns error on duplicate job name
-func (sr *Scheduler) addJob(j *Job) error {
+func (sr *Scheduler) addJob(j *job.Job) error {
 	for _, je := range sr.Jobs {
-		if je.id == j.id {
-			return fmt.Errorf("%v job already exists", j.id)
+		if je.Id == j.Id {
+			return fmt.Errorf("%v job already exists", j.Id)
 		}
 	}
 	sr.Jobs = append(sr.Jobs, j)
@@ -127,7 +128,7 @@ func (sr *Scheduler) removeJob(id string) error {
 }
 
 // NewScheduler constructs scheduler
-func NewScheduler(l logger) *Scheduler {
+func New(l logger) *Scheduler {
 	return &Scheduler{
 		logger: l,
 		stop:   make(chan struct{}),

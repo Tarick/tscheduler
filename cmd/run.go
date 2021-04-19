@@ -9,13 +9,14 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/Tarick/tscheduler/job"
+	"github.com/Tarick/tscheduler/pkg/job"
+	"github.com/Tarick/tscheduler/pkg/scheduler"
 
 	"golang.org/x/sync/semaphore"
 )
 
 var (
-	sr         *job.Scheduler
+	sr         *scheduler.Scheduler
 	done       chan struct{}
 	jobsCancel chan struct{}
 )
@@ -145,7 +146,7 @@ func runScheduler() {
 	// For all jobs
 	jobsCancel = make(chan struct{})
 
-	sr = job.NewScheduler(log)
+	sr = scheduler.New(log)
 	for _, jobConfig := range jobConfigs {
 		schedule := []job.Schedule{}
 		for _, scheduleSpec := range jobConfig.ScheduleSpec {
@@ -156,7 +157,7 @@ func runScheduler() {
 			}
 		}
 		command := createCommand(jobConfig)
-		j, err := job.NewJob(jobConfig.ID, command, schedule)
+		j, err := job.New(jobConfig.ID, command, schedule)
 		if err != nil {
 			log.Fatalf("Failure creating new job %+v\nError: %v", j, err)
 		}

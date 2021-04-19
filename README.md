@@ -11,9 +11,10 @@ I don't think that __tscheduler__ is mature enough to be used as a separate libr
 
 ## Motivation
 
-Mostly for Go practice, but I also don't like classic Crontab format, some things should just go. Also built in job control is IMO better than trying to script locks and timeouts. 
+Mostly for Go practice, but I also don't like classic Crontab format, some things should just go. Also built in job control is IMO better than trying to script locks and timeouts.
 
 The snippet of config file below is selfexplanatory.
+
 ```yaml
 logging:
   # Development key puts the logger in development mode, which changes the behavior of DPanicLevel and takes stacktraces more liberally.
@@ -89,7 +90,7 @@ jobs:
         minute: "*"
         # 30, 32, ...,58
         second: "30/2"
-  ```      
+  ```
 
 ## Features
 
@@ -98,7 +99,7 @@ This is not [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expressio
 
   * "*" - all time spec values, i.e. for minutes: 00 - 59.
 
-  * "start/step" ,e.g. */4 for 0, 4, ..., 56. Or 40/6 for minute to specify 40, 46, 52, 58, *00* - BUT BEWARE, we end on 00, NOT 58min + 6min = 4min.
+  * "start/step", e.g. */4 for 0, 4, ..., 56. Or 40/6 for minute to specify 40, 46, 52, 58, *00* - BUT BEWARE, we end on 00, NOT 58min + 6min = 4min.
 
   * "min-max" ranges, e.g. 40-50 means 40, 41, 42, ... , 50.
   * comma separated values, e.g. 4, 5, 6-10, 30/2.
@@ -146,6 +147,7 @@ Installation from the source:
 See [examples/config.yaml](examples/config.yaml).
 
 The path to file could be passed via --config option or looked up in order in:
+
 * current dir
 * $HOME/.config/tscheduler/
 * /etc/tscheduler/

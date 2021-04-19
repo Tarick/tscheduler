@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Tarick/tscheduler/job"
+	"github.com/Tarick/tscheduler/pkg/scheduler"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -31,7 +31,7 @@ var (
 
 // SchedulerCollector implements the Collector interface.
 type SchedulerCollector struct {
-	Scheduler *job.Scheduler
+	Scheduler *scheduler.Scheduler
 }
 
 // Describe implements Prometheus Collector

@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/Tarick/tscheduler/job"
+	"github.com/Tarick/tscheduler/pkg/job"
 )
 
 func startManagementService() {

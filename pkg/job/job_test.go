@@ -99,7 +99,7 @@ func TestNext(t *testing.T) {
 		s, _ := NewSchedule(scheduleSpec)
 		schedule = append(schedule, s)
 	}
-	job, err := NewJob("TestNew", func() {}, schedule)
+	job, err := New("TestNew", func() {}, schedule)
 	if err != nil {
 		t.Errorf("Error creating new job: %v", err)
 		return
@@ -110,5 +110,38 @@ func TestNext(t *testing.T) {
 	if diff := cmp.Diff(jobNextRun, jobExpectedNextRun); diff != "" {
 		t.Errorf("Test for job next time run failed!\nEXPECTED: \n %v\nNEW: \n %v\nDIFF: %v\n",
 			jobExpectedNextRun, jobNextRun, diff)
+	}
+}
+
+func BenchmarkNext(b *testing.B) {
+	newScheduleSpecs := []ScheduleSpec{
+		{Year: "2021-2022, 2028, 2033",
+			Month:    "1, 2, 4-5, 3, 4",
+			Day:      "1",
+			Weekday:  "0,1,2",
+			Hour:     "1",
+			Minute:   "2, 3",
+			Second:   "3",
+			Location: "UTC"},
+		{Year: "*",
+			Month:    "*",
+			Day:      "*",
+			Weekday:  "1,2",
+			Hour:     "*",
+			Minute:   "*",
+			Second:   "0",
+			Location: "UTC",
+		},
+	}
+	schedule := []Schedule{}
+	for _, scheduleSpec := range newScheduleSpecs {
+		s, _ := NewSchedule(scheduleSpec)
+		schedule = append(schedule, s)
+	}
+	job, _ := New("TestNew", func() {}, schedule)
+	currTime := time.Date(2020, 03, 1, 0, 0, 0, 0, time.UTC)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		job.Next(currTime)
 	}
 }

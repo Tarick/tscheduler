@@ -2,37 +2,11 @@ package job
 
 import (
 	"fmt"
-	"sort"
 	"time"
 )
 
 // MaxYearsAhead is maximum years in future we will try to lookup
-const MaxYearsAhead int = 10
-
-// NewJob creates and returns new job struct.
-func NewJob(id string, command func(), schedule []Schedule) (*Job, error) {
-	j := &Job{}
-	j.id, j.execFunc, j.schedule = id, command, schedule
-	// Check if we can schedule it at all
-	if _, err := j.Next(time.Now()); err != nil {
-		return &Job{}, err
-	}
-	return j, nil
-}
-
-// Job definition
-type Job struct {
-	id       string
-	execFunc func()
-	schedule []Schedule
-	nextRun  time.Time
-	lastRun  time.Time
-}
-
-// Run starts Job command.
-func (j *Job) Run() {
-	j.execFunc()
-}
+const MaxYearsAhead int = 5
 
 // ScheduleSpec defines time patterns to parse.
 type ScheduleSpec struct {
@@ -45,7 +19,7 @@ type Schedule struct {
 	location                                        *time.Location
 }
 
-// NewSchedule creates Schedule with all available variants in numeric form from string based ScheduleSpec
+// New creates Schedule with all available variants in numeric form from string based ScheduleSpec
 // It sets sane defaults in case any entry is missing, but Minute, Hour, Day, Month must be specified.
 // Year by default is * - "every year".
 // Second by default is 0.
@@ -117,36 +91,6 @@ func (s Schedule) String() string {
 func (s ScheduleSpec) String() string {
 	return fmt.Sprintf("\nYears: %v\nMonths: %v\nDays: %v\nWeekdays: %v\nHours: %v\nMinutes: %v\nSeconds: %v\nLocation: %v\n",
 		s.Year, s.Month, s.Day, s.Weekday, s.Hour, s.Minute, s.Second, s.Location)
-}
-func (j *Job) String() string {
-	return fmt.Sprintf("ID: %v\nNext run: %v\nLast run: %v", j.id, j.nextRun, j.lastRun)
-}
-
-// Updates job nextRun field, which is actually used by Scheduler
-func (j *Job) updateNextRun(t time.Time) (err error) {
-	t = t.Add(1 * time.Second)
-	j.nextRun, err = j.Next(t)
-	return err
-}
-
-// Next returns the next time for specific Schedule to fire a job and error in case it didn't find the time (e.g. expired Schedule)
-func (j *Job) Next(t time.Time) (time.Time, error) {
-	nextRuns := []time.Time{}
-	var err error
-	for _, s := range j.schedule {
-		next, err := s.Next(t)
-		if err != nil {
-			// expired schedule, skip
-			continue
-		}
-		nextRuns = append(nextRuns, next)
-	}
-	sort.Slice(nextRuns, func(i, j int) bool { return nextRuns[i].Before(nextRuns[j]) })
-	if len(nextRuns) == 0 {
-		return time.Time{}, fmt.Errorf("no valid next time run found")
-	}
-
-	return nextRuns[0], err
 }
 
 // Next returns schedule next time to run

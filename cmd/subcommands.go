@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Tarick/tscheduler/job"
+	"github.com/Tarick/tscheduler/pkg/job"
 
 	"github.com/spf13/cobra"
 )
@@ -97,7 +97,7 @@ func printParsedJobs() {
 				schedule = append(schedule, s)
 			}
 		}
-		j, err := job.NewJob(jobConfig.ID, command, schedule)
+		j, err := job.New(jobConfig.ID, command, schedule)
 		if err != nil {
 			fmt.Println("Failure creating job: ", err)
 			continue
