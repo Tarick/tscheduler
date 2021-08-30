@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
 	"github.com/Tarick/tscheduler/pkg/job"
 )
 
-type logger interface {
+type Logger interface {
 	Error(...interface{})
 	Info(...interface{})
 	Debug(...interface{})
@@ -18,7 +19,7 @@ type logger interface {
 // Scheduler is main type for running jobs
 type Scheduler struct {
 	Jobs      []*job.Job
-	logger    logger
+	logger    Logger
 	running   bool
 	mutex     sync.Mutex
 	stop      chan struct{}
@@ -66,7 +67,7 @@ func (sr *Scheduler) AddJob(j *job.Job) error {
 		sr.execF <- func() {
 			j := j
 			now := time.Now()
-			err = j.UpdateNextRun(now)
+			err = j.SetNextRun(now)
 			if err != nil {
 				err = fmt.Errorf("Job %v is not schedulable: %v", j.Id, err)
 			} else {
@@ -113,9 +114,9 @@ func (sr *Scheduler) RemoveJob(name string) error {
 
 // RemoveJob removes job from Scheduler list. Returns error if nothing is removed.
 func (sr *Scheduler) removeJob(id string) error {
-	jobs := []*Job{}
+	jobs := []*job.Job{}
 	for _, j := range sr.Jobs {
-		if j.id == id {
+		if j.Id == id {
 			continue
 		}
 		jobs = append(jobs, j)
@@ -128,7 +129,7 @@ func (sr *Scheduler) removeJob(id string) error {
 }
 
 // NewScheduler constructs scheduler
-func New(l logger) *Scheduler {
+func New(l Logger) *Scheduler {
 	return &Scheduler{
 		logger: l,
 		stop:   make(chan struct{}),
@@ -150,7 +151,7 @@ func (sr *Scheduler) Stop() context.Context {
 }
 
 // starts job and adds to the wait list
-func (sr *Scheduler) startJob(j *Job) {
+func (sr *Scheduler) startJob(j *job.Job) {
 	sr.jobWaiter.Add(1)
 	go func() {
 		defer sr.jobWaiter.Done()
@@ -181,13 +182,13 @@ func (sr *Scheduler) start() {
 	log.Info("Started scheduler")
 	now := time.Now()
 	for _, j := range sr.Jobs {
-		if err := j.updateNextRun(now); err != nil {
-			log.Warn("Job \"", j.id, "\" will not be scheduled due to error: ", err)
+		if err := j.SetNextRun(now); err != nil {
+			log.Warn("Job \"", j.Id, "\" will not be scheduled due to error: ", err)
 		}
 	}
 	var timer *time.Timer
 	for {
-		wakeUpAt, err := sr.jobsNextRun(now)
+		wakeUpAt, err := sr.getWakeUpTime(now)
 		if err != nil {
 			log.Warn("Can't schedule next wakeup, ", err)
 		}
@@ -197,17 +198,17 @@ func (sr *Scheduler) start() {
 		case now = <-timer.C:
 			sr.logger.Debug("Scheduler woke up")
 			for _, j := range sr.Jobs {
-				if j.nextRun.IsZero() {
+				if j.NextRun().IsZero() {
 					continue
 				}
-				if j.nextRun.Before(now) {
-					j.lastRun = now
-					log.Info("Starting job ", j.id, ", scheduled at: ", j.nextRun, ", current time: ", j.lastRun)
+				if j.NextRun().Before(now) {
+					j.SetLastRun(now)
+					log.Info("Starting job ", j.Id, ", scheduled at: ", j.NextRun, ", current time: ", j.LastRun)
 					sr.startJob(j)
-					if err := j.updateNextRun(now); err != nil {
-						log.Warn("Job \"", j.id, "\" will not be scheduled further due to scheduling error: ", err)
+					if err := j.SetNextRun(now); err != nil {
+						log.Warn("Job \"", j.Id, "\" will not be scheduled further due to scheduling error: ", err)
 					} else {
-						log.Info("Job \"", j.id, "\" next run scheduled at: ", j.nextRun)
+						log.Info("Job \"", j.Id, "\" next run scheduled at: ", j.NextRun)
 					}
 				}
 			}
@@ -226,15 +227,16 @@ func (sr *Scheduler) start() {
 
 }
 
-// Updates all jobs NextRun field
-func (sr *Scheduler) jobsNextRun(t time.Time) (wakeUp time.Time, err error) {
-	// Create initial wakeup value that is too far in the future (10 years).
+// getWakeUpTime returns time for scheduler to wakeup - the earliest running job
+func (sr *Scheduler) getWakeUpTime(t time.Time) (wakeUp time.Time, err error) {
+	// Create initial wakeup value that is too far in the future (10 years)
+	// to imit how far can we schedule into the future
 	initialWakeUp := t.AddDate(10, 0, 0)
 	wakeUp = initialWakeUp
 
 	for _, j := range sr.Jobs {
-		if j.nextRun.After(t) && j.nextRun.Before(wakeUp) {
-			wakeUp = j.nextRun
+		if j.NextRun().After(t) && j.NextRun().Before(wakeUp) {
+			wakeUp = j.NextRun()
 			err = nil
 		}
 	}

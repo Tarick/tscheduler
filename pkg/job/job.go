@@ -35,11 +35,21 @@ func (j *Job) String() string {
 	return fmt.Sprintf("ID: %v\nNext run: %v\nLast run: %v", j.Id, j.nextRun, j.lastRun)
 }
 
-// Updates job nextRun field, which is actually used by Scheduler
-func (j *Job) UpdateNextRun(t time.Time) (err error) {
+// Getters and Setters for private fields
+func (j *Job) NextRun() time.Time {
+	return j.nextRun
+}
+// SetNextRun updates job nextRun field, which is actually used by Scheduler
+func (j *Job) SetNextRun(t time.Time) (err error) {
 	t = t.Add(1 * time.Second)
 	j.nextRun, err = j.Next(t)
 	return err
+}
+func (j *Job) LastRun() time.Time {
+	return j.lastRun
+}
+func (j *Job) SetLastRun(t time.Time) {
+	j.lastRun=t
 }
 
 // timepoints implements sort.Interface, which doesn't use reflection as sort.Slice does
