@@ -1,19 +1,19 @@
 # tscheduler
-Command line tasks/jobs scheduler with seconds to years precision and jobs control
+Command line tasks/jobs scheduler with from seconds to years precision and the jobs control
 
 ## Disclaimer
 
-This is early ALPHA and will probably stay as it is, you've been warned.
+This is an early ALPHA and will probably stay as it is, you've been warned.
 
-If you're looking for Cron compatible implementation to use as a library in your applications, then please look at [robfig/cron](https://github.com/robfig/cron) or any of __gron__ forks, I've used a lot of ideas from those.
+If you're looking for a Cron compatible implementation to use as a library in your applications, then please take a look at [robfig/cron](https://github.com/robfig/cron) or any of __gron__ forks, I've used a lot of ideas from those.
 
-I don't think that __tscheduler__ is mature enough to be used as a separate library package, so will not split it into the library from application code for now.
+I don't think that __tscheduler__ is mature enough to be used as a separate library package, so will not split it into the library from the application code for now.
 
 ## Motivation
 
-Mostly for Go practice, but I also don't like classic Crontab format, some things should just go. Also built in job control is IMO better than trying to script locks and timeouts.
+Mostly for the Go practice, but also I don't like the classic Crontab format as had to constantly recall the fields position. Some things should just go. Also built in job control is IMO better than trying to script locks and timeouts.
 
-The snippet of config file below is selfexplanatory.
+The snippet of config file below is self-explanatory.
 
 ```yaml
 logging:
@@ -95,7 +95,7 @@ jobs:
 ## Features
 
 * Multiple schedules per job to run the same command on different days at different times.
-This is not [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expression) compatible implementation, I've struggled a lot trying to recall the position of specific time in its spec, so tscheduler was written to use fully specified time keywords in its config instead. It still uses some of Crontab constructs to specify schedule for convenience:
+This is not [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expression) compatible implementation, I've struggled a lot trying to recall the position of specific time in its spec, so tscheduler was written to use the fully specified time keywords in its config instead. It still uses some Crontab constructs to specify schedule for convenience:
 
   * "*" - all time spec values, i.e. for minutes: 00 - 59.
 
@@ -112,18 +112,18 @@ This is not [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expressio
 
 * Year and seconds precision by default.
 
-    If year is ommited, will try to find the next job run for every year from current to 10 years in the future.
+    If the year is ommited, will try to find out the next job run for the every year from the current to 10 years in the future.
 
-    If second is ommited, by default it specifies 00.
+    If seconds are ommited, by default it specifies 00.
 
-* Location (Timezone) per schedule. Job can run with timezone per schedule.
+* Location (Timezone) per schedule. A job can run with the specified timezone per schedule.
 
   Note that we don't handle summer/winter daylight shifts, it is possible for job to skip its run or run twice during the shift. Recommended to use UTC.
   By default the location is Local, i.e. the one of the machine.
 
 * Job control:
 
-  * Stdout and stderr redirection of running command to files. File rotation is not supported.
+  * Stdout and stderr redirection of the running command to files. File rotation is not supported.
   * Simultaneous run of job is disabled by default, change it with "parallel" key.
   * Job timeout after which the job will be killed.
 
@@ -136,7 +136,7 @@ This is not [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expressio
 
 ## Installation
 
-Fetch prebuilt binary from Releases page. Only Linux is avaliable for now.
+Fetch the prebuilt binary from the [Releases](https://github.com/Tarick/tscheduler/releases) page. Only Linux is avaliable for now.
 
 Installation from the source:
 
@@ -146,7 +146,7 @@ Installation from the source:
 
 See [examples/config.yaml](examples/config.yaml).
 
-The path to file could be passed via --config option or looked up in order in:
+The path to the config file could be passed via --config option or looked up in order in:
 
 * current dir
 * $HOME/.config/tscheduler/
